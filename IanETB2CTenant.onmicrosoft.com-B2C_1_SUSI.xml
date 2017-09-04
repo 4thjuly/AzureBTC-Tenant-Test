@@ -1,0 +1,84 @@
+<TrustFrameworkPolicy xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns="http://schemas.microsoft.com/online/cpim/schemas/2013/06" PolicySchemaVersion="0.3.0.0" TenantId="IanETB2CTenant.onmicrosoft.com" TenantObjectId="6f736fed-3b73-4e7a-be08-559df502a049" PolicyId="B2C_1_SUSI" PublicPolicyUri="http://ianetb2ctenant.onmicrosoft.com/">
+  <BasePolicy>
+    <TenantId>IanETB2CTenant.onmicrosoft.com</TenantId>
+    <PolicyId>base-v1</PolicyId>
+  </BasePolicy>
+  <BuildingBlocks>
+    <ContentDefinitions>
+      <ContentDefinition Id="api.signinandsignupwithpassword">
+        <LoadUri>https://ietstorage1.blob.core.windows.net/b2c/wingtip/unified.html</LoadUri>
+      </ContentDefinition>
+      <ContentDefinition Id="api.localaccountsignup1.1">
+        <LoadUri>https://ietstorage1.blob.core.windows.net/b2c/wingtip/selfasserted.html</LoadUri>
+      </ContentDefinition>
+    </ContentDefinitions>
+  </BuildingBlocks>
+  <ClaimsProviders>
+    <ClaimsProvider>
+      <DisplayName>PhoneFactor</DisplayName>
+      <TechnicalProfiles>
+        <TechnicalProfile Id="PhoneFactor-Common">
+          <EnabledForUserJourneys>OnClaimsExistence</EnabledForUserJourneys>
+        </TechnicalProfile>
+      </TechnicalProfiles>
+    </ClaimsProvider>
+    <ClaimsProvider>
+      <DisplayName>Token Issuer</DisplayName>
+      <TechnicalProfiles>
+        <TechnicalProfile Id="JwtIssuer">
+          <Metadata>
+            <Item Key="token_lifetime_secs">3600</Item>
+            <Item Key="id_token_lifetime_secs">3600</Item>
+            <Item Key="refresh_token_lifetime_secs">1209600</Item>
+            <Item Key="rolling_refresh_token_lifetime_secs">7776000</Item>
+            <Item Key="IssuanceClaimPattern">AuthorityAndTenantGuid</Item>
+            <Item Key="AuthenticationContextReferenceClaimPattern">None</Item>
+          </Metadata>
+        </TechnicalProfile>
+      </TechnicalProfiles>
+    </ClaimsProvider>
+    <ClaimsProvider>
+      <DisplayName>Self Asserted</DisplayName>
+      <TechnicalProfiles>
+        <TechnicalProfile Id="SelfAsserted-Input">
+          <InputClaims>
+            <InputClaim ClaimTypeReferenceId="email" />
+          </InputClaims>
+          <OutputClaims>
+            <OutputClaim ClaimTypeReferenceId="email" Required="true" PartnerClaimType="Verified.Email" />
+          </OutputClaims>
+        </TechnicalProfile>
+      </TechnicalProfiles>
+    </ClaimsProvider>
+  </ClaimsProviders>
+  <UserJourneys>
+    <UserJourney Id="B2CSignUpOrSignInWithPassword">
+      <OrchestrationSteps>
+        <OrchestrationStep Order="1" Type="CombinedSignInAndSignUp" ContentDefinitionReferenceId="api.signinandsignupwithpassword">
+          <ClaimsProviderSelections>
+            <ClaimsProviderSelection ValidationClaimsExchangeId="LocalAccountSigninEmailExchange" />
+          </ClaimsProviderSelections>
+        </OrchestrationStep>
+      </OrchestrationSteps>
+    </UserJourney>
+  </UserJourneys>
+  <RelyingParty>
+    <DefaultUserJourney ReferenceId="B2CSignUpOrSignInWithPassword" />
+    <UserJourneyBehaviors>
+      <SingleSignOn Scope="Tenant" />
+      <SessionExpiryType>Rolling</SessionExpiryType>
+      <SessionExpiryInSeconds>86400</SessionExpiryInSeconds>
+    </UserJourneyBehaviors>
+    <TechnicalProfile Id="PolicyProfile">
+      <DisplayName>PolicyProfile</DisplayName>
+      <Protocol Name="OpenIdConnect" />
+      <OutputClaims>
+        <OutputClaim ClaimTypeReferenceId="emails" />
+        <OutputClaim ClaimTypeReferenceId="identityProvider" />
+        <OutputClaim ClaimTypeReferenceId="objectId" PartnerClaimType="sub" />
+        <OutputClaim ClaimTypeReferenceId="trustFrameworkPolicy" Required="true" DefaultValue="{policy}" />
+      </OutputClaims>
+      <SubjectNamingInfo ClaimType="sub" />
+    </TechnicalProfile>
+  </RelyingParty>
+</TrustFrameworkPolicy>
